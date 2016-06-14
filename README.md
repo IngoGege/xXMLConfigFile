@@ -1,8 +1,17 @@
 # xXMLConfigFile
 This DSC module allows you to modify XML attributes in XML based application configuration files
 ## Resources
+### xXMLConfigFile
 
-* **xXMLConfigFile**
+* **ConfigPath:** Path to the configuration file.
+* **XPath:** XPath to find the node in the XML
+* **Name:** Name of the attribute.
+* **Value:** Value for the attribute
+* **isAttribute:** Switch to distinct between a single attribute and an element with multiple attributes
+* **Attribute1:** Name of the first attribute in a key/value pair. Default is **key**.
+* **Attribute2:** Name of the second attribute in a key/value pair. Default is **value**.
+* **DoBackup:** If set to true a backup file will be created before modifying and saving the original file.
+* **Ensure:** Define whether the attribute is Present or Absent.
 
 ## Versions
 ### 1.0.0.0
@@ -15,6 +24,7 @@ Add, remove or set an element with 2 attributes in the **//appSettings** section
 Add or remove an attribute in the **/MRSConfiguration** section. The example code shows how to ensure that the attribute 'FoolMe' with a value of 'really' exist and the attribute 'FoolYou' doesn't.
 
 ## Known issues
+The module uses XPath in order to find attributes and nodes in a given file. XPath is by default **case-sensitive**!
 The module supports the following operations:
 ### 
 * **single attribute:** add/remove/modify
