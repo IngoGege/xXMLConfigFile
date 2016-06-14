@@ -19,9 +19,9 @@ This DSC module allows you to modify XML attributes in XML based application con
 
 ## Examples
 ### AddRemoveModifyAttributeNode
-Add, remove or set an element with 2 attributes in the **//appSettings** section. The example code 
+Add, remove or set an element with 2 attributes in the **//appSettings** section. The example code add an element named **add** with 2 attributes **'key=SmtpSendLogFlushInterval'** and **'value=0:00:30'** to the file and enforces that the node with the attribute **'key=SmtpRecvLogFlushInterval'** doesn't exists.
 ### AddRemovModifyeSingleAttributeValue
-Add or remove an attribute in the **/MRSConfiguration** section. The example code shows how to ensure that the attribute 'FoolMe' with a value of 'really' exist and the attribute 'FoolYou' doesn't.
+Add or remove an attribute in the **/MRSConfiguration** section. The example code shows how to ensure that the attribute 'FoolMe' doesn't exist and 2 attributes (MaxRetries/MaxActiveMovesPerSourceMDB) are present and have specified values.
 
 ## Known issues
 The module uses XPath in order to find attributes and nodes in a given file. XPath is by default **case-sensitive**!
