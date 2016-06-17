@@ -50,8 +50,6 @@ Describe "Test modify an attribute value" {
         Name       = 'MaxRetries'
         Value      = '40'
         isAttribute= $true
-        #Attribute1 = 'key'
-        #Attribute2 = 'value'
         Ensure     = 'Present'
     }
 
@@ -92,8 +90,6 @@ Describe "Test modify an attributenode" {
         Name       = 'LogEnabled'
         Value      = 'true'
         isAttribute= $false
-        #Attribute1 = 'key'
-        #Attribute2 = 'value'
         Ensure     = 'Present'
     }
 
@@ -115,15 +111,4 @@ Describe "Test modify an attributenode" {
 
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove item FoolMe with value really in appSettings/add" -Verbose
 
-    <#
-    $testparams.Value = '60'
-    $expectedResult.Value = '60'
-
-    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Change value for MaxRetries" -Verbose
-    
-    $testparams.Value = '40'
-    $expectedResult.Value = '40'
-    
-    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Reset value for MaxRetries" -Verbose
-    #>
 }
