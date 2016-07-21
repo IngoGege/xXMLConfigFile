@@ -50,6 +50,16 @@ param
     $VerbosePreference
 )
 try {
+    if ($DoBackup) {
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
+        try {
+            $xml.Save($Backup)
+        }
+        catch {
+            Write-Verbose $Error[0].Exception
+        }
+    }
     #read XML
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
@@ -71,16 +81,6 @@ try {
         else {
             Write-Verbose "$($Name) could not be found!"
             break;
-        }
-    }
-    if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
-        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
-        try {
-            $xml.Save($Backup)
-        }
-        catch {
-            Write-Verbose $Error[0].Exception
         }
     }
     $xml.Save($ConfigPath)
@@ -109,6 +109,16 @@ try {
     #read XML
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
+    if ($DoBackup) {
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
+        try {
+            $xml.Save($Backup)
+        }
+        catch {
+            Write-Vebose $Error[0].Exception
+        }
+    }
     if (!$isAttribute) {
         if ($root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']")){
             Write-Verbose "An element already exist!";
@@ -147,16 +157,6 @@ try {
             Write-Verbose "Nothing found!"
         }
     }
-    if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
-        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
-        try {
-            $xml.Save($Backup)
-        }
-        catch {
-            Write-Vebose $Error[0].Exception
-        }
-    }
     $xml.Save($ConfigPath)
 }
 catch {
@@ -180,6 +180,16 @@ param
     $VerbosePreference
 )
 try {
+    if ($DoBackup) {
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
+        try {
+            $xml.Save($Backup)
+        }
+        catch {
+            Write-Verbose $Error[0].Exception
+        }
+    }
     #read XML
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
@@ -207,16 +217,6 @@ try {
         }
         else {
             Write-Verbose "Nothing found!"
-        }
-    }
-    if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
-        $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
-        try {
-            $xml.Save($Backup)
-        }
-        catch {
-            Write-Verbose $Error[0].Exception
         }
     }
     $xml.Save($ConfigPath)
