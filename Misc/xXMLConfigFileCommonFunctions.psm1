@@ -50,6 +50,9 @@ param
     $VerbosePreference
 )
 try {
+    #read XML
+    $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
+    $root = $xml.get_DocumentElement()
     if ($DoBackup) {
         $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
         $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
@@ -57,12 +60,9 @@ try {
             $xml.Save($Backup)
         }
         catch {
-            Write-Verbose $Error[0].Exception
+            Write-Verbose $_
         }
     }
-    #read XML
-    $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
-    $root = $xml.get_DocumentElement()
     if (!$isAttribute) {
         if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']")) {
             Write-Verbose "$($Name) found and will be set to $($Value)!"
@@ -116,7 +116,7 @@ try {
             $xml.Save($Backup)
         }
         catch {
-            Write-Vebose $Error[0].Exception
+            Write-Vebose $_
         }
     }
     if (!$isAttribute) {
@@ -180,6 +180,9 @@ param
     $VerbosePreference
 )
 try {
+    #read XML
+    $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
+    $root = $xml.get_DocumentElement()
     if ($DoBackup) {
         $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
         $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
@@ -187,12 +190,9 @@ try {
             $xml.Save($Backup)
         }
         catch {
-            Write-Verbose $Error[0].Exception
+            Write-Verbose $_
         }
     }
-    #read XML
-    $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
-    $root = $xml.get_DocumentElement()
     if (!$isAttribute) {
         if (!$root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']")){
             Write-Verbose "Nothing found!";
