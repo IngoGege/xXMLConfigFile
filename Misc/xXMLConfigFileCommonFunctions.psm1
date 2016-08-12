@@ -54,7 +54,7 @@ try {
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
     if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmssfff")
         $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
         try {
             $xml.Save($Backup)
@@ -110,7 +110,7 @@ try {
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
     if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmssfff")
         $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
         try {
             $xml.Save($Backup)
@@ -184,7 +184,7 @@ try {
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
     if ($DoBackup) {
-        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmss")
+        $CurrentDate = (get-date).tostring("MMddyyyy-hhmmssfff")
         $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
         try {
             $xml.Save($Backup)
