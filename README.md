@@ -14,6 +14,8 @@ This DSC module allows you to modify XML attributes in XML based application con
 * **Ensure:** Define whether the attribute is Present or Absent.
 
 ## Versions
+### 1.1.0.0
+* fixed backup issues
 ### 1.0.0.0
 * initial release
 
