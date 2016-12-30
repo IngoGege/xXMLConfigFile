@@ -63,7 +63,7 @@ Describe "Test modify an attribute value" {
     $expectedResult.Value = '60'
 
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Change value for MaxRetries" -Verbose
-    
+
     $testparams.Value = '40'
     $expectedResult.Value = '40'
     
@@ -105,7 +105,75 @@ Describe "Test modify an attributenode" {
     $expectedResult.Value = 'really'
 
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Add item FoolMe with value really in appSettings/add" -Verbose
+    $testparams.Ensure = 'Absent'
+    $expectedResult.Value = $null
 
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove item FoolMe with value really in appSettings/add" -Verbose
+
+}
+
+Describe "Test modify an attribute value in config with XML Namespace" {
+    $testparams = @{
+        ConfigPath = "$($PSScriptRoot)\Test_withXMLNS.config"
+        XPath      = '//MRSConfiguration'
+        Name       = 'MaxRetries'
+        Value      = '40'
+        isAttribute= $true
+        Ensure     = 'Present'
+    }
+
+    $expectedResult = @{
+        Value      = '40'
+    }
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Set value for MaxRetries" -Verbose
+
+    $testparams.Value = '60'
+    $expectedResult.Value = '60'
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Change value for MaxRetries" -Verbose
+    
+    $testparams.Value = '40'
+    $expectedResult.Value = '40'
+    
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Reset value for MaxRetries" -Verbose
+
+    $testparams.Name = 'FoolMe'
+    $testparams.Value = 'really'
+
+    $expectedResult.Value = 'really'
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Add attribute FoolMe with value really" -Verbose
+
+    $testparams.Ensure = 'Absent'
+
+    $expectedResult.Value = $null
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove attribute FoolMe with value really" -Verbose
+
+}
+
+Describe "Test modify an attributenode in config with XML Namespace" {
+    $testparams = @{
+        ConfigPath = "$($PSScriptRoot)\Test_withXMLNS.config"
+        XPath      = '//appSettings/add'
+        Name       = 'LogEnabled'
+        Value      = 'true'
+        isAttribute= $false
+        Ensure     = 'Present'
+    }
+
+    $expectedResult = @{
+        Value      = 'true'
+    }
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Set value for LogEnabled in appSettings/add" -Verbose
+
+    $testparams.Name = 'FoolMe'
+    $testparams.Value = 'really'
+
+    $expectedResult.Value = 'really'
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Add item FoolMe with value really in appSettings/add" -Verbose
     $testparams.Ensure = 'Absent'
     $expectedResult.Value = $null
 
