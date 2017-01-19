@@ -45,7 +45,7 @@ function Test-AllTargetResourceFunctions
 
 Describe "Test modify an attribute value" {
     $testparams = @{
-        ConfigPath = "$($PSScriptRoot)\Test.config"
+        ConfigPath = "$($PSScriptRoot)\Data\Test.config"
         XPath      = '//MRSConfiguration'
         Name       = 'MaxRetries'
         Value      = '40'
@@ -85,7 +85,7 @@ Describe "Test modify an attribute value" {
 
 Describe "Test modify an attributenode" {
     $testparams = @{
-        ConfigPath = "$($PSScriptRoot)\Test.config"
+        ConfigPath = "$($PSScriptRoot)\Data\Test.config"
         XPath      = '//appSettings/add'
         Name       = 'LogEnabled'
         Value      = 'true'
@@ -114,7 +114,7 @@ Describe "Test modify an attributenode" {
 
 Describe "Test modify an attribute value in config with XML Namespace" {
     $testparams = @{
-        ConfigPath = "$($PSScriptRoot)\Test_withXMLNS.config"
+        ConfigPath = "$($PSScriptRoot)\Data\Test_withXMLNS.config"
         XPath      = '//MRSConfiguration'
         Name       = 'MaxRetries'
         Value      = '40'
@@ -154,7 +154,7 @@ Describe "Test modify an attribute value in config with XML Namespace" {
 
 Describe "Test modify an attributenode in config with XML Namespace" {
     $testparams = @{
-        ConfigPath = "$($PSScriptRoot)\Test_withXMLNS.config"
+        ConfigPath = "$($PSScriptRoot)\Data\Test_withXMLNS.config"
         XPath      = '//appSettings/add'
         Name       = 'LogEnabled'
         Value      = 'true'
@@ -178,5 +178,33 @@ Describe "Test modify an attributenode in config with XML Namespace" {
     $expectedResult.Value = $null
 
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove item FoolMe with value really in appSettings/add" -Verbose
+
+}
+
+Describe "Test add an element with textvalue in config with XML Namespace" {
+    $testparams = @{
+        ConfigPath = "$($PSScriptRoot)\Data\Test_withXMLNS.config"
+        XPath      = '/*'
+        Name       = 'ElementA'
+        Value      = 'Root'
+        isElementTextValue= $true
+        Ensure     = 'Present'
+    }
+
+    $expectedResult = @{
+        Value      = 'Root'
+    }
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Add an element with textvalue under root" -Verbose
+
+    $testparams.Value = 'NewRoot'
+    $expectedResult.Value = 'NewRoot'
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Modify textvalue of element" -Verbose
+
+    $testparams.Ensure = 'Absent'
+    $expectedResult.Value = $null
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove element" -Verbose
 
 }
