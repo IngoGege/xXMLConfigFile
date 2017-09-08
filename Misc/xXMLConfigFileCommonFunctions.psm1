@@ -225,7 +225,12 @@ function Add-XMLItem {
             }
             else {
                 #get parent node
-                $Parent=$root.SelectSingleNode($XPath,$ns).get_ParentNode()
+                if ($root.SelectSingleNode($XPath,$ns) -eq $null){
+                    # Take one step back in XPath to add first element
+                    $Parent=$root.SelectSingleNode(($XPath.SubString(0, $XPath.LastIndexOf('/'))),$ns)
+                } else {
+                    $Parent=$root.SelectSingleNode($XPath,$ns).get_ParentNode()
+                }
                 #create element
                 $Element = $xml.CreateElement($($XPath.Split('/')[-1] -replace ("$($NSPrefix):","")),$NamespaceURI)
                 #create attributes
