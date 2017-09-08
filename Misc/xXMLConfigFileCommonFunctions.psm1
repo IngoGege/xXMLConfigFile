@@ -271,6 +271,9 @@ function Remove-XMLItem {
         break
     }
     try {
+        #read XML
+        $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
+        $root = $xml.get_DocumentElement()
         if ($DoBackup) {
             $CurrentDate = (get-date).tostring("MMddyyyy-HHmmssffffff")
             $Backup = $ConfigPath + "_$CurrentDate" + ".bak" 
@@ -283,9 +286,6 @@ function Remove-XMLItem {
                 break
             }
         }
-        #read XML
-        $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
-        $root = $xml.get_DocumentElement()
         if (!$XMLNS){
             $NamespaceURI = $xml.DocumentElement.NamespaceURI
         }
