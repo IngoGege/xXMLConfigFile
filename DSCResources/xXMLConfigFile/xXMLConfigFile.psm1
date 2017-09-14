@@ -8,7 +8,8 @@ function Get-TargetResource
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCUseVerboseMessageInDSCResource", "")]
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
-    param (
+    param
+    (
         [parameter(Mandatory = $true)]
         [System.String]
         $ConfigPath,
@@ -77,7 +78,8 @@ function Set-TargetResource
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
     [CmdletBinding()]
-    param (
+    param
+    (
         [parameter(Mandatory = $true)]
         [System.String]
         $ConfigPath,
@@ -122,38 +124,39 @@ function Set-TargetResource
     #Load helper module
     Import-Module -Name "$((Get-Item -LiteralPath "$($PSScriptRoot)").Parent.Parent.FullName)\Misc\xXMLConfigFileCommonFunctions.psm1" -Verbose:0
 
-    try {
-        $CurrentValue = Get-XMLItem -ConfigPath $ConfigPath -XPath $XPath -Name $Name -isAttribute $isAttribute -isElementTextValue $isElementTextValue -Attribute1 $Attribute1 -Attribute2 $Attribute2 -XMLNS $XMLNS -NSPrefix $NSPrefix
-    }
-    catch {
-        Write-Verbose -Message $_
-    }
-
-    if($Ensure -eq 'Present') {
+    if($Ensure -eq 'Present')
+    {
         #remove unnecessary parameters
         [void]$PSBoundParameters.Remove('Ensure')
         #if item has not expected value set
         $exists = Test-XMLItemExist @PSBoundParameters
-        if ($exists) {
+        if ($exists)
+        {
             Set-XMLItem @PSBoundParameters
         }
         #if item not exist add
-        elseif (!$exists) {
+        elseif (!$exists)
+        {
             Add-XMLItem @PSBoundParameters
         }
-        else {
+        else
+        {
             Write-Verbose -Message "Could not determine if exists!"
         }
     }
-    elseif($Ensure -eq 'Absent') {
-        #if item exist remove
-        if ($null -ne $CurrentValue) {
-            #remove unnecessary parameters
-            [void]$PSBoundParameters.Remove('Ensure')
+    elseif($Ensure -eq 'Absent')
+    {
+        #remove unnecessary parameters
+        [void]$PSBoundParameters.Remove('Ensure')
+        $exists = Test-XMLItemExist @PSBoundParameters
+        if ($exists)
+        {
+            Write-Verbose "Item exists!"
             Remove-XMLItem @PSBoundParameters
         }
     }
-    else {
+    else
+    {
         Write-Verbose -Message "Neither Present nor Absent was set!"
     }
 }
@@ -163,7 +166,8 @@ function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
-    param (
+    param
+    (
         [parameter(Mandatory = $true)]
         [System.String]
         $ConfigPath,
@@ -207,34 +211,69 @@ function Test-TargetResource
 
     #Load helper module
     Import-Module -Name "$((Get-Item -LiteralPath "$($PSScriptRoot)").Parent.Parent.FullName)\Misc\xXMLConfigFileCommonFunctions.psm1" -Verbose:0
-    try {
+    try
+    {
         $CurrentValue = Get-XMLItem -ConfigPath $ConfigPath -XPath $XPath -Name $Name -isAttribute $isAttribute -isElementTextValue $isElementTextValue -Attribute1 $Attribute1 -Attribute2 $Attribute2 -XMLNS $XMLNS -NSPrefix $NSPrefix -VerbosePreference $VerbosePreference
     }
-    catch {
+    catch
+    {
         Write-Verbose -Message $_
     }
 
-    if($Ensure -eq 'Present') {
+    if($Ensure -eq 'Present')
+    {
     Write-Verbose -Message "Values for $($Name):Current=$($CurrentValue). Expected=$($Value)"
-        if ($CurrentValue -eq $Value) {
+        if ([System.String]::IsNullOrEmpty($Attribute2))
+        {
+            #remove unnecessary parameters
+            [void]$PSBoundParameters.Remove('Ensure')
+            #check if element exist when $Attribute2 is NULL
+            $exists = Test-XMLItemExist @PSBoundParameters
+            Write-Verbose "Attribute2 is IsNullOrEmpty"
+
+            if($exists -and ([System.String]::IsNullOrEmpty($CurrentValue) -and [System.String]::IsNullOrEmpty($Value)))
+            {
+                $result = $true
+            }
+        }
+        elseif ($CurrentValue -eq $Value)
+        {
             $result = $true
         }
-        else {
+        else
+        {
             $result = $false
-         }
+        }
     }
-    elseif($Ensure -eq 'Absent') {
-        if ($null -eq $CurrentValue) {
+    elseif($Ensure -eq 'Absent')
+    {
+        if ([System.String]::IsNullOrEmpty($Attribute2))
+        {
+            #remove unnecessary parameters
+            [void]$PSBoundParameters.Remove('Ensure')
+            #check if element exist when $Attribute2 is NULL
+            $exists = Test-XMLItemExist @PSBoundParameters
+            if(!$exists)
+            {
+                Write-Verbose "Attribute2 is IsNullOrEmpty, but element exists"
+                $result = $true
+            }
+        }
+        elseif ($null -eq $CurrentValue)
+        {
             $result = $true
         }
-        else {
+        else
+        {
             Write-Verbose -Message "Ensure is set to $($Ensure), but there was an item found!"
             $result = $false
         }
     }
-    else {
+    else
+    {
         $result = $false
     }
+
     return $result
 
 }

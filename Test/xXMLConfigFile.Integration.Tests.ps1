@@ -208,3 +208,26 @@ Describe "Test add an element with textvalue in config with XML Namespace" {
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove element" -Verbose
 
 }
+
+Describe "Test modify an attributenode where element node doesn't exist" {
+    $testparams = @{
+        ConfigPath = "$($PSScriptRoot)\Data\Test.config"
+        XPath      = '//appSettings/remove'
+        Name       = 'Application Name'
+        Value      = $null
+        Attribute2 = $null
+        isAttribute= $false
+        Ensure     = 'Present'
+    }
+
+    $expectedResult = @{
+        Value      = $null
+    }
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Create key Application Name in appSettings/remove" -Verbose
+
+    $testparams.Ensure = 'Absent'
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove key Application Name in appSettings/remove" -Verbose
+
+}

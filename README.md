@@ -19,14 +19,21 @@ This DSC module allows you to modify XML attributes in XML based application con
 ## Versions
 ### Unreleased
 
+### 2.0.0.1
+* Fixed Remove-XMLItem backup functionality
+* improved Known Issue with multiple attributes in an element
+
 ### 2.0.0.0
 * added support for Add/Remove/Modify elemnts with textvalue
 * improve backup of files
 * improve code
+
 ### 1.2.0.0
 * added XmlNamespaceManager support
+
 ### 1.1.0.0
 * fixed backup issues
+
 ### 1.0.0.0
 * initial release
 
@@ -42,5 +49,5 @@ The module supports the following operations:
 ### 
 * **single attribute:** add/remove/modify
 * **elements with text node:** add/remove/modify
-* **multiple attributes in an element:** you can add an element with multiple attributes only, if an element with the same neame already exists. Example: In **//appSettings** section there are several elements named **add** with 2 attributes (key/value pairs). You can add additional elements with the name 'add key=... value=...', but not with a different name like 'remove key=... value=...'. In this case you first need to create an empty element and add the attributes.
+* **multiple attributes in an element:** you can add an element with multiple attributes only, if an element with the same neame already exists. Example: In **//appSettings** section there are several elements named **add** with 2 attributes (key/value pairs). You can add additional elements with the name 'add key=... value=...', ~~but not with a different name like 'remove key=... value=...'. In this case you first need to create an empty element and add the attributes.~~ if an element doesn't exist, the last part of the XPath after a / will be deleted and an element will be added one level up.
 
