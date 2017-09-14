@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '2.0.0.0'
+ModuleVersion = '2.0.0.1'
 
 # ID used to uniquely identify this module
 GUID = 'bdf68771-2a18-41a8-83bf-fd24d5c264d4'
@@ -104,8 +104,8 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '* Added support for XmlNamespaceManager
-* Added support to Add/Remove/Modify elements without attributes
+        ReleaseNotes = '* Fixed Remove-XMLItem backup functionality
+* Fixed Add-XMLItem Known Issue with multiple attributes
 '
 
     } # End of PSData hashtable
