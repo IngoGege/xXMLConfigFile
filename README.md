@@ -15,9 +15,14 @@ This DSC module allows you to modify XML attributes in XML based application con
 * **NSPrefix:** The prefix for the XmlNamespaceManager, which is then used in XPath.
 * **DoBackup:** If set to true a backup file will be created before modifying and saving the original file.
 * **Ensure:** Define whether the attribute is Present or Absent.
+* **EnforceNullXMLNS:** Enforcement of not using the default XmlNamespaceManager. Usefull when items don't have one.
 
 ## Versions
 ### Unreleased
+
+### 2.0.0.2
+* Fixed enforcement of XmlNamespaceManager
+* introduced new parameter EnforceNullXMLNS
 
 ### 2.0.0.1
 * Fixed Remove-XMLItem backup functionality

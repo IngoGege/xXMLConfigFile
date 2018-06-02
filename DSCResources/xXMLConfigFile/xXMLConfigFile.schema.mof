@@ -14,5 +14,6 @@ class xXMLConfigFile : OMI_BaseResource
     [Write, Description("Ensure Present or Absent"), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("Define XmlNamespaceManager. If omitted the resource determines one from file.")] String XMLNS;
     [Write, Description("The prefix of the XmlNamespaceManager, which is used in the XPath")] String NSPrefix;
+    [Write, Description("Enforce no XMLNS")] Boolean EnforceNullXMLNS;
 };
 

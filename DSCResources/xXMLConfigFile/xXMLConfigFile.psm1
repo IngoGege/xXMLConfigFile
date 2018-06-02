@@ -18,7 +18,7 @@ function Get-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory = $false)]
         [System.String]
         $Name,
 
@@ -48,7 +48,10 @@ function Get-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [System.Boolean]
+        $EnforceNullXMLNS
     )
 
     #Load helper module
@@ -58,16 +61,17 @@ function Get-TargetResource
     $CurrentValue = Get-XMLItem @PSBoundParameters
 
     $returnValue = @{
-        ConfigPath  = $ConfigPath
-        XPath       = $XPath
-        Name        = $Name
-        Value       = $CurrentValue
-        isAttribute = $isAttribute
-        Attribute1  = $Attribute1
-        Attribute2  = $Attribute2
-        XMLNS       = $XMLNS
-        NSPrefix    = $NSPrefix
-        DoBackup    = $DoBackup
+        ConfigPath          = $ConfigPath
+        XPath               = $XPath
+        Name                = $Name
+        Value               = $CurrentValue
+        isAttribute         = $isAttribute
+        Attribute1          = $Attribute1
+        Attribute2          = $Attribute2
+        XMLNS               = $XMLNS
+        NSPrefix            = $NSPrefix
+        DoBackup            = $DoBackup
+        EnforceNullXMLNS    = $EnforceNullXMLNS
     }
 
     $returnValue
@@ -88,7 +92,7 @@ function Set-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory = $false)]
         [System.String]
         $Name,
 
@@ -118,7 +122,10 @@ function Set-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [System.Boolean]
+        $EnforceNullXMLNS
     )
 
     #Load helper module
@@ -176,7 +183,7 @@ function Test-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory = $false)]
         [System.String]
         $Name,
 
@@ -206,14 +213,20 @@ function Test-TargetResource
 
         [ValidateSet("Present","Absent")]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [System.Boolean]
+        $EnforceNullXMLNS
     )
 
     #Load helper module
     Import-Module -Name "$((Get-Item -LiteralPath "$($PSScriptRoot)").Parent.Parent.FullName)\Misc\xXMLConfigFileCommonFunctions.psm1" -Verbose:0
     try
     {
-        $CurrentValue = Get-XMLItem -ConfigPath $ConfigPath -XPath $XPath -Name $Name -isAttribute $isAttribute -isElementTextValue $isElementTextValue -Attribute1 $Attribute1 -Attribute2 $Attribute2 -XMLNS $XMLNS -NSPrefix $NSPrefix -VerbosePreference $VerbosePreference
+        #$CurrentValue = Get-XMLItem -ConfigPath $ConfigPath -XPath $XPath -Name $Name -isAttribute $isAttribute -isElementTextValue $isElementTextValue -Attribute1 $Attribute1 -Attribute2 $Attribute2 -XMLNS $XMLNS -NSPrefix $NSPrefix -VerbosePreference $VerbosePreference -EnforceNullXMLNS $EnforceNullXMLNS
+        $GetParams = $PSBoundParameters
+        [void]$GetParams.Remove('Ensure')
+        $CurrentValue = Get-XMLItem @GetParams
     }
     catch
     {

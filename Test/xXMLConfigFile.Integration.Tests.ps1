@@ -1,4 +1,4 @@
-﻿Import-Module $PSScriptRoot\..\DSCResources\xXMLConfigFile\xXMLConfigFile.psm1
+﻿Import-Module $PSScriptRoot\..\DSCResources\xXMLConfigFile\xXMLConfigFile.psm1 -Force
 #this function was taken from xExchange module
 function Test-AllTargetResourceFunctions
 {
@@ -229,5 +229,29 @@ Describe "Test modify an attributenode where element node doesn't exist" {
     $testparams.Ensure = 'Absent'
 
     Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Remove key Application Name in appSettings/remove" -Verbose
+
+}
+
+Describe "Test set an element with textvalue in config enforcing NULL XML Namespace" {
+    $testparams = @{
+        ConfigPath          = "$($PSScriptRoot)\Data\Test_with_NULL_XMLNS.config"
+        XPath               = "//string[@id='HeadingRDWA']"
+        Name                = $null
+        Value               = 'Password Reset Portal3'
+        isElementTextValue  = $true
+        Ensure              = 'Present'
+        EnforceNullXMLNS    = $true
+    }
+
+    $expectedResult = @{
+        Value = 'Password Reset Portal3'
+    }
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Set the value of an element and enforcing EnforceNullXMLNS" -Verbose
+
+    $testparams.Value = 'Password Reset Portal2'
+    $expectedResult.Value = 'Password Reset Portal2'
+
+    Test-AllTargetResourceFunctions -Params $testparams -ExpectedGetResults $expectedResult -ContextLabel "Reset the value of an element and enforcing EnforceNullXMLNS" -Verbose
 
 }

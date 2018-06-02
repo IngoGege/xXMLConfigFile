@@ -14,6 +14,7 @@ function Get-XMLItem
         [string]$XMLNS,
         [string]$NSPrefix = 'ns',
         [Boolean]$DoBackup,
+        [Boolean]$EnforceNullXMLNS,
         $VerbosePreference
     )
 
@@ -27,49 +28,81 @@ function Get-XMLItem
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
 
-    if (!$XMLNS)
+    if (-not $EnforceNullXMLNS)
     {
-        $NamespaceURI = $xml.DocumentElement.NamespaceURI
-    }
-    else
-    {
-        $NamespaceURI = $XMLNS
+        if (-not $XMLNS)
+        {
+            $NamespaceURI = $xml.DocumentElement.NamespaceURI
+        }
+        else
+        {
+            $NamespaceURI = $XMLNS
+        }
+
+        #create XML namespacemanager from document
+        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+        $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
+        #add XMLNameSpaceManager to XPath
+        $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
     }
 
-    #create XML namespacemanager from document
-    $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-    $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
-    #add XMLNameSpaceManager to XPath
-    $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):" 
     Write-Verbose -Message "XPath:$($Xpath)"
     Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
 
     if ($isAttribute)
     {
-        if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+        if (-not $EnforceNullXMLNS)
         {
-            $Item = $root.SelectSingleNode($XPath,$ns).GetAttribute($Name)
+            if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+            {
+                $Item = $root.SelectSingleNode($XPath,$ns).GetAttribute($Name)
+            }
+        }
+        else
+        {
+            if ($root.SelectSingleNode($XPath).HasAttribute($Name))
+            {
+                $Item = $root.SelectSingleNode($XPath).GetAttribute($Name)
+            }
         }
     }
     elseif ($isElementTextValue)
     {
-        $Node = $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)
-
-		if ($Node)
+        if (-not $EnforceNullXMLNS)
+        {
+            $Node = $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)
+        }
+        else
+        {
+            $Node = $root.SelectSingleNode($XPath + "$($Name)")
+        }
+        if ($Node)
         {
             $Item = $Node.get_InnerText()
         }
     }
     else
     {
-        if (![System.String]::IsNullOrEmpty($Attribute2))
+        if (-not [System.String]::IsNullOrEmpty($Attribute2))
         {
             Write-Verbose -Message "`$Attribute2 is not NullOrEmpty"
-            $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).$Attribute2
+            if (-not $EnforceNullXMLNS)
+            {
+                $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).$Attribute2
+            }
+            else{
+                $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']").$Attribute2
+            }
         }
         else
         {
-            $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).$Attribute2
+            if (-not $EnforceNullXMLNS)
+            {
+                $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).$Attribute2
+            }
+            else{
+                $Item = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']").$Attribute2
+            }
         }
     }
 
@@ -93,6 +126,7 @@ function Set-XMLItem
         [string]$XMLNS,
         [string]$NSPrefix = 'ns',
         [Boolean]$DoBackup,
+        [Boolean]$EnforceNullXMLNS,
         $VerbosePreference
     )
 
@@ -125,65 +159,121 @@ function Set-XMLItem
             }
         }
 
-        if (!$XMLNS)
+        if (-not $EnforceNullXMLNS)
         {
-            $NamespaceURI = $xml.DocumentElement.NamespaceURI
-        }
-        else
-        {
-            $NamespaceURI = $XMLNS
-        }
+            if (-not $XMLNS)
+            {
+                $NamespaceURI = $xml.DocumentElement.NamespaceURI
+            }
+            else
+            {
+                $NamespaceURI = $XMLNS
+            }
 
-        #create XML namespacemanager from document
-        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-        $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
-        #add XMLNameSpaceManager to XPath
-        $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
-        Write-Verbose -Message "XPath:$($Xpath)"
-        Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
+            #create XML namespacemanager from document
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
+            #add XMLNameSpaceManager to XPath
+            $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
+            Write-Verbose -Message "XPath:$($Xpath)"
+            Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
+        }
 
         if ($isAttribute)
         {
-            if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
-                $root.SelectSingleNode($XPath,$ns).SetAttribute($Name,$Value)
+                if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+                {
+                    Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
+                    $root.SelectSingleNode($XPath,$ns).SetAttribute($Name,$Value)
+                }
+                else {
+                    Write-Verbose -Message "$($Name) could not be found!"
+                    break
+                }
             }
-            else {
-                Write-Verbose -Message "$($Name) could not be found!"
-                break
+            else
+            {
+                if ($root.SelectSingleNode($XPath).HasAttribute($Name))
+                {
+                    Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
+                    $root.SelectSingleNode($XPath).SetAttribute($Name,$Value)
+                }
+                else {
+                    Write-Verbose -Message "$($Name) could not be found!"
+                    break
+                }
             }
         }
         elseif ($isElementTextValue)
         {
-            if ($null -ne $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns))
+            Write-Verbose "Element!"
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
-                ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)).set_InnerText($Value)
-            }
-            else
-            {
-                Write-Verbose -Message "$($Name) could not be found!"
-                break
-            }
-        }
-        else{
-            if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
-            {
-                if([System.String]::IsNullOrEmpty($Attribute2))
+                if ($null -ne $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns))
                 {
-                    Write-Verbose -Message "$($Name) found, but `$Attribute2 is NullOrEmtpy!"
+                    Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
+                    ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)).set_InnerText($Value)
                 }
                 else
                 {
-                    Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
-                    $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).SetAttribute($Attribute2,$Value)
+                    Write-Verbose -Message "$($Name) could not be found!"
+                    break
                 }
             }
-            else
+            else{
+                if ($null -ne $root.SelectSingleNode($XPath + "$($Name)"))
+                {
+                    Write-Verbose -Message "Element found and will be set to $($Value)!"
+                    ($root.SelectSingleNode($XPath + "$($Name)")).set_InnerText($Value)
+                }
+                else
+                {
+                    Write-Verbose -Message "Element could not be found!"
+                    break
+                }
+            }
+        }
+        else{
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose -Message "$($Name) could not be found!"
-                break
+                if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+                {
+                    if([System.String]::IsNullOrEmpty($Attribute2))
+                    {
+                        Write-Verbose -Message "$($Name) found, but `$Attribute2 is NullOrEmtpy!"
+                    }
+                    else
+                    {
+                        Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
+                        $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns).SetAttribute($Attribute2,$Value)
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message "$($Name) could not be found!"
+                    break
+                }
+            }
+            else{
+                if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']"))
+                {
+                    if([System.String]::IsNullOrEmpty($Attribute2))
+                    {
+                        Write-Verbose -Message "$($Name) found, but `$Attribute2 is NullOrEmtpy!"
+                    }
+                    else
+                    {
+                        Write-Verbose -Message "$($Name) found and will be set to $($Value)!"
+                        $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']").SetAttribute($Attribute2,$Value)
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message "$($Name) could not be found!"
+                    break
+                }
             }
         }
 
@@ -213,6 +303,7 @@ function Add-XMLItem
         [string]$XMLNS,
         [string]$NSPrefix = 'ns',
         [Boolean]$DoBackup,
+        [Boolean]$EnforceNullXMLNS,
         $VerbosePreference
     )
 
@@ -245,110 +336,209 @@ function Add-XMLItem
             }
         }
 
-        if (!$XMLNS)
+        if (-not $EnforceNullXMLNS)
         {
-            $NamespaceURI = $xml.DocumentElement.NamespaceURI
-        }
-        else
-        {
-            $NamespaceURI = $XMLNS
-        }
-
-        #create XML namespacemanager from document
-        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-        $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
-        #add XMLNameSpaceManager to XPath
-        $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
-        Write-Verbose -Message "XPath:$($Xpath)"
-        Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
-
-        if ($isAttribute)
-        {
-            if (!$null -eq $root.SelectSingleNode($XPath,$ns))
+            if (-not $XMLNS)
             {
-                if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
-                {
-                    Write-Verbose -Message "Attribute already exist!"
-                    break
-                }
-                else
-                {
-                    $root.SelectSingleNode($Xpath,$ns).SetAttribute($Name,$Value)
-                }
+                $NamespaceURI = $xml.DocumentElement.NamespaceURI
             }
             else
             {
-                Write-Verbose -Message "Nothing found!"
+                $NamespaceURI = $XMLNS
+            }
+
+            #create XML namespacemanager from document
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
+            #add XMLNameSpaceManager to XPath
+            $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
+            Write-Verbose -Message "XPath:$($Xpath)"
+            Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
+        }
+
+        if ($isAttribute)
+        {
+            if (-not $EnforceNullXMLNS)
+            {
+                if (-not $null -eq $root.SelectSingleNode($XPath,$ns))
+                {
+                    if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+                    {
+                        Write-Verbose -Message "Attribute already exist!"
+                        break
+                    }
+                    else
+                    {
+                        $root.SelectSingleNode($Xpath,$ns).SetAttribute($Name,$Value)
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message "Nothing found!"
+                }
+            }
+            else{
+                if (-not $null -eq $root.SelectSingleNode($XPath))
+                {
+                    if ($root.SelectSingleNode($XPath).HasAttribute($Name))
+                    {
+                        Write-Verbose -Message "Attribute already exist!"
+                        break
+                    }
+                    else
+                    {
+                        $root.SelectSingleNode($Xpath).SetAttribute($Name,$Value)
+                    }
+                }
+                else
+                {
+                    Write-Verbose -Message "Nothing found!"
+                }
             }
         }
         elseif ($isElementTextValue)
         {
-            if ($null -ne ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)))
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose -Message "Element $($Name) already exist!"
-                break
+                if ($null -ne ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)))
+                {
+                    Write-Verbose -Message "Element $($Name) already exist!"
+                    break
+                }
+                else
+                {
+                    #create element
+                    $Element = $xml.CreateElement($Name,$NamespaceURI)
+    
+                    #set value
+                    if ($null -ne $Value)
+                    {
+                        $Element.set_InnerText($Value)
+                    }
+    
+                    #append element
+                    $root.SelectSingleNode($XPath,$ns).AppendChild($Element) | Out-Null
+                }
             }
             else
             {
-                #create element
-                $Element = $xml.CreateElement($Name,$NamespaceURI)
-
-                #set value
-                if ($null -ne $Value)
+                if ($null -ne ($root.SelectSingleNode($XPath + "/$($Name)")))
                 {
-                    $Element.set_InnerText($Value)
+                    Write-Verbose -Message "Element $($Name) already exist!"
+                    break
                 }
-
-                #append element
-                $root.SelectSingleNode($XPath,$ns).AppendChild($Element) | Out-Null
+                else
+                {
+                    #create element
+                    $Element = $xml.CreateElement($Name)
+    
+                    #set value
+                    if ($null -ne $Value)
+                    {
+                        $Element.set_InnerText($Value)
+                    }
+    
+                    #append element
+                    $root.SelectSingleNode($XPath).AppendChild($Element) | Out-Null
+                }
             }
         }
         else
         {
-            if ($root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose -Message "Element already exist!"
-                break
-            }
-            else
-            {
-
-                #get parent node
-                if ($root.SelectSingleNode($XPath,$ns) -eq $null)
+                if ($root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
                 {
-                    # Take one step back in XPath to add first element  
-                    $Parent=$root.SelectSingleNode(($XPath.SubString(0, $XPath.LastIndexOf('/'))),$ns)
+                    Write-Verbose -Message "Element already exist!"
+                    break
                 }
                 else
                 {
-                    $Parent=$root.SelectSingleNode($XPath,$ns).get_ParentNode()
+    
+                    #get parent node
+                    if ($null -eq $root.SelectSingleNode($XPath,$ns))
+                    {
+                        # Take one step back in XPath to add first element  
+                        $Parent=$root.SelectSingleNode(($XPath.SubString(0, $XPath.LastIndexOf('/'))),$ns)
+                    }
+                    else
+                    {
+                        $Parent=$root.SelectSingleNode($XPath,$ns).get_ParentNode()
+                    }
+    
+                    #create element
+                    $Element = $xml.CreateElement($($XPath.Split('/')[-1] -replace ("$($NSPrefix):","")),$NamespaceURI)
+    
+                    if (-not $null -eq $Attribute1)
+                    {
+                        #create attributes
+                        $Attr1=$xml.CreateAttribute($Attribute1)
+                        #set attributes
+                        $Attr1.set_Value($Name)
+                        #add attributes to element
+                        $Element.SetAttributeNode($Attr1) | Out-Null
+                    }
+    
+                    if (-not $null -eq $Attribute2)
+                    {
+                        #create attributes
+                        $Attr2=$xml.CreateAttribute($Attribute2)
+                        #set attributes
+                        $Attr2.set_Value($Value)
+                        #add attributes to element
+                        $Element.SetAttributeNode($Attr2) | Out-Null
+                    }
+    
+                    #append element
+                    $Parent.AppendChild($Element) | Out-Null
                 }
-
-                #create element
-                $Element = $xml.CreateElement($($XPath.Split('/')[-1] -replace ("$($NSPrefix):","")),$NamespaceURI)
-
-                if (!$null -eq $Attribute1)
+            }
+            else{
+                if ($root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']"))
                 {
-                    #create attributes
-                    $Attr1=$xml.CreateAttribute($Attribute1)
-                    #set attributes
-                    $Attr1.set_Value($Name)
-                    #add attributes to element
-                    $Element.SetAttributeNode($Attr1) | Out-Null
+                    Write-Verbose -Message "Element already exist!"
+                    break
                 }
-
-                if (!$null -eq $Attribute2)
+                else
                 {
-                    #create attributes
-                    $Attr2=$xml.CreateAttribute($Attribute2)
-                    #set attributes
-                    $Attr2.set_Value($Value)
-                    #add attributes to element
-                    $Element.SetAttributeNode($Attr2) | Out-Null
+    
+                    #get parent node
+                    if ($null -eq $root.SelectSingleNode($XPath))
+                    {
+                        # Take one step back in XPath to add first element  
+                        $Parent=$root.SelectSingleNode(($XPath.SubString(0, $XPath.LastIndexOf('/'))))
+                    }
+                    else
+                    {
+                        $Parent=$root.SelectSingleNode($XPath).get_ParentNode()
+                    }
+    
+                    #create element
+                    $Element = $xml.CreateElement($($XPath.Split('/')[-1]))
+    
+                    if (-not $null -eq $Attribute1)
+                    {
+                        #create attributes
+                        $Attr1=$xml.CreateAttribute($Attribute1)
+                        #set attributes
+                        $Attr1.set_Value($Name)
+                        #add attributes to element
+                        $Element.SetAttributeNode($Attr1) | Out-Null
+                    }
+    
+                    if (-not $null -eq $Attribute2)
+                    {
+                        #create attributes
+                        $Attr2=$xml.CreateAttribute($Attribute2)
+                        #set attributes
+                        $Attr2.set_Value($Value)
+                        #add attributes to element
+                        $Element.SetAttributeNode($Attr2) | Out-Null
+                    }
+    
+                    #append element
+                    $Parent.AppendChild($Element) | Out-Null
                 }
-
-                #append element
-                $Parent.AppendChild($Element) | Out-Null
             }
         }
 
@@ -379,6 +569,7 @@ function Remove-XMLItem
         [string]$XMLNS,
         [string]$NSPrefix = 'ns',
         [Boolean]$DoBackup,
+        [Boolean]$EnforceNullXMLNS,
         $VerbosePreference
     )
 
@@ -411,62 +602,110 @@ function Remove-XMLItem
             }
         }
 
-        if (!$XMLNS)
+        if (-not $EnforceNullXMLNS)
         {
-            $NamespaceURI = $xml.DocumentElement.NamespaceURI
-        }
-        else
-        {
-            $NamespaceURI = $XMLNS
-        }
+            if (-not $XMLNS)
+            {
+                $NamespaceURI = $xml.DocumentElement.NamespaceURI
+            }
+            else
+            {
+                $NamespaceURI = $XMLNS
+            }
 
-        #create XML namespacemanager from document
-        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-        $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
-        #add XMLNameSpaceManager to XPath
-        $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
-        Write-Verbose -Message "XPath:$($Xpath)"
-        Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
+            #create XML namespacemanager from document
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
+            #add XMLNameSpaceManager to XPath
+            $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
+            Write-Verbose -Message "XPath:$($Xpath)"
+            Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
+        }
 
         if ($isAttribute)
         {
-            if (!$null -eq $root.SelectSingleNode($XPath,$ns))
+            if (-not $EnforceNullXMLNS)
             {
-                if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+                if (-not $null -eq $root.SelectSingleNode($XPath,$ns))
                 {
-                    $root.SelectSingleNode($Xpath,$ns).RemoveAttribute($Name)
+                    if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+                    {
+                        $root.SelectSingleNode($Xpath,$ns).RemoveAttribute($Name)
+                    }
+                    else
+                    {
+                        Write-Verbose "Nothing found!"
+                        break
+                    }
                 }
                 else
                 {
                     Write-Verbose "Nothing found!"
-                    break
                 }
             }
-            else
-            {
-                Write-Verbose "Nothing found!"
+            else{
+                if (-not $null -eq $root.SelectSingleNode($XPath))
+                {
+                    if ($root.SelectSingleNode($XPath).HasAttribute($Name))
+                    {
+                        $root.SelectSingleNode($Xpath).RemoveAttribute($Name)
+                    }
+                    else
+                    {
+                        Write-Verbose "Nothing found!"
+                        break
+                    }
+                }
+                else
+                {
+                    Write-Verbose "Nothing found!"
+                }
             }
         }
         elseif ($isElementTextValue)
         {
-            #get node
-            $Node = $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)
+            if (-not $EnforceNullXMLNS)
+            {
+                #get node
+                $Node = $root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)
+            }
+            else{
+                #get node
+                $Node = $root.SelectSingleNode($XPath + "/$($Name)")
+            }
             #get parent node and remove node
             $Node.get_ParentNode().RemoveChild($Node) | Out-Null
         }
         else
         {
-            if (!$root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+            if (-not $EnforceNullXMLNS)
             {
-                Write-Verbose "Nothing found!"
-                break
+                if (-not $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+                {
+                    Write-Verbose "Nothing found!"
+                    break
+                }
+                else
+                {
+                    #get node
+                    $Node = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns)
+                    #get parent node and remove node
+                    $Node.get_ParentNode().RemoveChild($Node) | Out-Null
+                }
             }
-            else
-            {
-                #get node
-                $Node = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns)
-                #get parent node and remove node
-                $Node.get_ParentNode().RemoveChild($Node) | Out-Null
+            else{
+                if (-not $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']"))
+                {
+                    Write-Verbose "Nothing found!"
+                    break
+                }
+                else
+                {
+                    #get node
+                    $Node = $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']")
+                    #get parent node and remove node
+                    $Node.get_ParentNode().RemoveChild($Node) | Out-Null
+                }
             }
         }
 
@@ -496,6 +735,7 @@ function Test-XMLItemExist
         [string]$XMLNS,
         [string]$NSPrefix = 'ns',
         [Boolean]$DoBackup,
+        [Boolean]$EnforceNullXMLNS,
         $VerbosePreference
     )
 
@@ -510,46 +750,76 @@ function Test-XMLItemExist
     $xml = [xml](Get-Content $ConfigPath -ErrorAction Stop)
     $root = $xml.get_DocumentElement()
 
-    if (!$XMLNS)
+    if (-not $EnforceNullXMLNS)
     {
-        $NamespaceURI = $xml.DocumentElement.NamespaceURI
-    }
-    else
-    {
-        $NamespaceURI = $XMLNS
+        if (-not $XMLNS)
+        {
+            $NamespaceURI = $xml.DocumentElement.NamespaceURI
+        }
+        else
+        {
+            $NamespaceURI = $XMLNS
+        }
+
+        #create XML namespacemanager from document
+        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+        $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
+        #add XMLNameSpaceManager to XPath
+        $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
+        Write-Verbose -Message "XPath:$($Xpath)"
+        Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
     }
 
-    #create XML namespacemanager from document
-    $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-    $ns.AddNameSpace("$NSPrefix",$NamespaceURI)
-    #add XMLNameSpaceManager to XPath
-    $XPath = $XPath -replace "/(?!/)", "/$($NSPrefix):"
-    Write-Verbose -Message "XPath:$($Xpath)"
-    Write-Verbose -Message "NamespaceURI:$($NamespaceURI)"
     if ($isAttribute)
     {
-        if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+        if (-not $EnforceNullXMLNS)
         {
-            $result = $true
+            if ($root.SelectSingleNode($XPath,$ns).HasAttribute($Name))
+            {
+                $result = $true
+            }
+        }
+        else{
+            if ($root.SelectSingleNode($XPath).HasAttribute($Name))
+            {
+                $result = $true
+            }
         }
     }
     elseif ($isElementTextValue)
     {
-        if ($null -ne ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)))
+        if (-not $EnforceNullXMLNS)
         {
-            $result = $true
+            if ($null -ne ($root.SelectSingleNode($XPath + "/$($NSPrefix):$($Name)",$ns)))
+            {
+                $result = $true
+            }
+        }
+        else{
+            if ($null -ne ($root.SelectSingleNode($XPath + "$($Name)")))
+            {
+                $result = $true
+            }
         }
     }
     else
     {
-        if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+        if (-not $EnforceNullXMLNS)
         {
-            $result = $true
+            if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']",$ns))
+            {
+                $result = $true
+            }
+        }
+        else{
+            if ($null -ne $root.SelectSingleNode("$XPath[@$Attribute1=`'$Name`']"))
+            {
+                $result = $true
+            }
         }
     }
 
     return $result
 }
-
 
 Export-ModuleMember -Function *
