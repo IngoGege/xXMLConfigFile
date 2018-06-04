@@ -4,7 +4,7 @@ class xXMLConfigFile : OMI_BaseResource
 {
     [Key, Description("Path to config file")] String ConfigPath;
     [Key, Description("XPath to use")] String XPath;
-    [Key, Description("Name of the attribute/element")] String Name;
+    [Write, Description("Name of the attribute/element")] String Name;
     [Write, Description("Value of the attribute")] String Value;
     [Write, Description("Name is attribute")] Boolean isAttribute;
     [Write, Description("Name is element only")] Boolean isElementTextValue;
