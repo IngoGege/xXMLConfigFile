@@ -18,7 +18,7 @@ function Get-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $false)]
+        [parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
@@ -92,7 +92,7 @@ function Set-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $false)]
+        [parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
@@ -183,7 +183,7 @@ function Test-TargetResource
         [System.String]
         $XPath,
 
-        [parameter(Mandatory = $false)]
+        [parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
