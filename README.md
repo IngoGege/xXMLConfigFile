@@ -19,6 +19,8 @@ This DSC module allows you to modify XML attributes in XML based application con
 
 ## Versions
 ### Unreleased
+### 2.0.0.3
+* changed parameter Name to key and allowe empty string in order to support same combinations for XPath and ConfigPath
 
 ### 2.0.0.2
 * Fixed enforcement of XmlNamespaceManager
