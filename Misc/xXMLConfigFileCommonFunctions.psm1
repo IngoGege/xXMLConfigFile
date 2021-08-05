@@ -411,7 +411,7 @@ function Add-XMLItem
                     $Element = $xml.CreateElement($Name,$NamespaceURI)
     
                     #set value
-                    if ($null -ne $Value)
+                    if ($PSBoundParameters.ContainsKey("Value"))
                     {
                         $Element.set_InnerText($Value)
                     }
@@ -433,7 +433,7 @@ function Add-XMLItem
                     $Element = $xml.CreateElement($Name)
     
                     #set value
-                    if ($null -ne $Value)
+                    if ($PSBoundParameters.ContainsKey("Value"))
                     {
                         $Element.set_InnerText($Value)
                     }
